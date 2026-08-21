@@ -1,0 +1,4 @@
+node_modules/
+kakake-plugin-mkjianyi/
+*.tsbuildinfo
+.DS_Store

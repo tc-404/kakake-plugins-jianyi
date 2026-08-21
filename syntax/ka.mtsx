@@ -1,0 +1,202 @@
+// require MT >= 2.16.0
+// KA 文本插件语法高亮 — 对齐 src/ka/core-keywords.ts 与 插件文档.md
+// 验收示例：文本类插件/基础例子1.ka、基础例子2.ka、基础例子3.ka
+{
+    name: ["KA 文本插件", ".ka"]
+    hide: false
+    ignoreCase: false
+    styles: [
+        "comment", #8B949E, #8B949E
+        "string", #CE9178, #CE9178
+        "strEscape", #D7BA7D, #D7BA7D
+        "interpolation", #569CD6, #569CD6, @B
+        "media", #C586C0, #C586C0
+        "mediaKind", #C586C0, #C586C0, @B
+        "mediaKey", #4EC9B0, #4EC9B0
+        "mediaPath", #CE9178, #CE9178
+        "keyword", #C586C0, #C586C0, @B
+        "definition", #4EC9B0, #4EC9B0, @B
+        "variable", #9CDCFE, #9CDCFE, @B
+        "builtin", #4FC1FF, #4FC1FF
+        "function", #DCDCAA, #DCDCAA
+        "method", #DCDCAA, #DCDCAA
+        "number", #B5CEA8, #B5CEA8
+        "operator", #D4D4D4, #D4D4D4
+        "regex", #D16969, #D16969
+        "subscript", #9CDCFE, #9CDCFE
+        "styleValue" > "string"
+    ]
+    comment: {startsWith: "#"}
+    bracketPairs: ["{}", "()", "[]"]
+    defines: [
+        "escapedChar": [
+            {match: /\\u[0-9a-fA-F]{4}/, 0: "strEscape"}
+            {match: /\\[ntr\\"\\`]/, 0: "strEscape"}
+            {match: /\\\{/, 0: "strEscape"}
+            {match: /\\./, 0: "strEscape"}
+        ]
+        // [图片,url:…/{AppID}/…] — 类型 / 键 / 路径 / 插值分色
+        "mediaTag": {
+            style: "media"
+            start: {
+                match: /\[(图片|语音|视频|文件)(,)/
+                1: "mediaKind"
+                2: "operator"
+            }
+            end: {match: /\]/}
+            childrenStyle: "mediaPath"
+            contains: [
+                {
+                    match: /(url|本地)(:)/
+                    1: "mediaKey"
+                    2: "operator"
+                }
+                {include: "interpolation"}
+                {include: "escapedChar"}
+            ]
+        }
+        "interpolation": {
+            style: "interpolation"
+            start: {match: /\$?\{/}
+            end: {match: /\}/}
+            contains: [
+                {
+                    match: /\[(?:[\u4e00-\u9fff\w]+|"[^"]*")\]/
+                    0: "subscript"
+                }
+                {match: /[+\-*\/%]/, 0: "operator"}
+                {
+                    number: "10|F"
+                    style: "number"
+                }
+            ]
+        }
+        "doubleString": {
+            style: "string"
+            start: {match: /"/}
+            end: {match: /"/}
+            contains: [
+                {include: "escapedChar"}
+                {include: "mediaTag"}
+                {include: "interpolation"}
+            ]
+        }
+        "backtickString": {
+            style: "string"
+            start: {match: /`/}
+            end: {match: /`/}
+            contains: [
+                {include: "escapedChar"}
+                {include: "mediaTag"}
+                {include: "interpolation"}
+            ]
+        }
+        "matchRegex": {
+            style: "regex"
+            start: {
+                match: /(\.match)(\s*\(\s*)(\/)/
+                1: "method"
+                3: "regex"
+            }
+            end: {
+                match: /(\/)([gimsuy]*)/
+                1: "regex"
+                2: "operator"
+            }
+            childrenStyle: "regex"
+            contains: [
+                {match: /\\./, 0: "strEscape"}
+                {
+                    start: {match: /\[/}
+                    end: {match: /\]/}
+                    contains: [
+                        {match: /\\./, 0: "strEscape"}
+                    ]
+                }
+            ]
+        }
+        "lineComment": {match: /(?m)(?:#|\/\/|；)[^\n]*/, 0: "comment"}
+        "bracketStyle": {
+            match: /(\[\s*风格标准\s*\])(\s*:\s*)(\S+)/
+            1: "keyword"
+            2: "operator"
+            3: "styleValue"
+        }
+        "bracketStructColon": {
+            match: /\[\s*等待\s*:[^\]]*\]/
+            0: "keyword"
+        }
+        "bracketBuiltinColon": {
+            match: /\[\s*(?:时间|取艾特|取括号|转时间|获取群身份|插件定义)\s*[:;][^\]]*\]/
+            0: "builtin"
+        }
+        "bracketStruct": {
+            match: /\[\s*(?:风格标准|如果|反之|结束|For循环|跳过|中断|等待)\s*\]/
+            0: "keyword"
+        }
+        "bracketDef": {
+            match: /(\[\s*(?:全局定义|临时定义)\s*\])(\s+)([\u4e00-\u9fff\w]+)/
+            1: "definition"
+            3: "variable"
+        }
+        // 出 += … / i++ —— 赋值目标（须先于裸 +=/++ 运算符）
+        "assignTarget": {
+            match: /(?<![\u4e00-\u9fff\w])([\u4e00-\u9fff\w]+)(\s*)(\+=|\+\+)/
+            1: "variable"
+            3: "operator"
+        }
+        "bracketBuiltin": {
+            match: /\[\s*(?:文本消息|事件|群号|发言人|AppID|消息ID|取艾特数|取艾特|取括号|时间|转时间|获取群身份|获取群信息|获取机器人群状态|查询群禁言|插件定义)\s*\]/
+            0: "builtin"
+        }
+        "funcCall": {
+            match: /(?<![\u4e00-\u9fff\w])(发详细消息|发Markdown|发消息|设置群禁言|取入群申请|审批入群申请|指令输入|回车指令|回调钮|跳转钮|指令钮|按钮行|键盘|转数字|撤回|读文件|写文件|取JSON|取长度|访问|读|写)(?=\s*\()/
+            1: "function"
+        }
+        "subscriptAccess": {
+            match: /(?<=[\u4e00-\u9fff\w])(\[(?:[\u4e00-\u9fff\w]+|"[^"]*")\])/
+            1: "subscript"
+        }
+        "operators": [
+            {match: /＝＝|＝|==|!=|＞＝|＜＝|>=|<=|＞|＜|[<>]/, 0: "operator"}
+            {match: /\+\+|\+=|[+\-*\/%]/, 0: "operator"}
+        ]
+    ]
+    contains: [
+        // 1. 字符串优先，避免 # // / 被注释或正则抢走
+        {include: "doubleString"}
+        {include: "backtickString"}
+
+        // 2. .match(/正则/)
+        {include: "matchRegex"}
+
+        // 3. 行注释
+        {include: "lineComment"}
+
+        // 4. 方括号：更具体的在前
+        {include: "bracketStyle"}
+        {include: "bracketStructColon"}
+        {include: "bracketBuiltinColon"}
+        {include: "bracketStruct"}
+        {include: "bracketDef"}
+        {include: "bracketBuiltin"}
+
+        // 5. 语句 / 函数名
+        {include: "funcCall"}
+
+        // 6. += / ++ 左侧变量
+        {include: "assignTarget"}
+
+        // 7. 回执下标等
+        {include: "subscriptAccess"}
+
+        // 8. 数字
+        {
+            number: "10|F"
+            style: "number"
+        }
+
+        // 9. 运算符
+        {include: "operators"}
+    ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "GF-plugin-mkjianyi",
+  "displayName": "简易文本",
+  "author": "MMX",
+  "version": "0.3.0",
+  "entry": "index.mjs",
+  "description": "QQ 官方机器人 · 文本类 .ka 子插件转接器：动态加载 文本类插件 目录下任意 .ka 文件"
+}

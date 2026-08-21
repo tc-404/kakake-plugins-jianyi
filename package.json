@@ -1,0 +1,28 @@
+{
+  "name": "gf-plugin-mkjianyi",
+  "plugin": "简易文本",
+  "version": "0.3.0",
+  "type": "module",
+  "main": "index.mjs",
+  "description": "QQ 官方机器人 · 文本类 .ka 子插件转接器：动态扫描 文本类插件/*.ka 并解释执行",
+  "author": "MMX",
+  "license": "MIT",
+  "keywords": [
+    "kakake",
+    "gf",
+    "qq-official",
+    "ka",
+    "text-plugin"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "watch": "vite build --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.3.1",
+    "@types/node": "^20.19.33",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.1"
+  }
+}
